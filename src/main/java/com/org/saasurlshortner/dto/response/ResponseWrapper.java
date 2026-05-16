@@ -1,5 +1,6 @@
 package com.org.saasurlshortner.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatusCode;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseWrapper<T> {
     private T data;
     private String message;
