@@ -1,0 +1,486 @@
+{
+  "info": {
+    "name": "SaaS URL Shortener API",
+    "_postman_id": "saas-url-shortner-collection",
+    "description": "Complete API collection for the SaaS URL Shortener backend. Covers authentication, user profile, and session management.\n\n**Setup:**\n1. Register or login — the `token` variable is set automatically.\n2. All protected endpoints use `{{token}}` from the collection variable.\n3. Set `{{baseUrl}}` to your server (default: http://localhost:8080).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints — register, login, and logout.",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.data.token);",
+                  "    console.log('Token saved:', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"roles\": [\"USER\"],\n  \"deviceInfo\": \"Postman / MacOS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "signup"]
+            },
+            "description": "Register a new user account. On success (201) the `token` collection variable is set automatically.\n\n**Roles:** `USER`, `ADMIN`, `SYSTEM_ADMIN`"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"roles\": [\"USER\"],\n  \"deviceInfo\": \"Postman / MacOS\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "auth", "signup"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\"\n  },\n  \"message\": \"User registered successfully\",\n  \"httpStatusCode\": \"201 CREATED\"\n}"
+            },
+            {
+              "name": "400 Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"123\",\n  \"roles\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "auth", "signup"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": {\n    \"name\": \"Name is required\",\n    \"email\": \"Email must be valid\",\n    \"password\": \"Password must be at least 8 characters\",\n    \"roles\": \"At least one role must be provided\"\n  },\n  \"message\": \"Validation failed\",\n  \"httpStatusCode\": \"400 BAD_REQUEST\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.data.token);",
+                  "    console.log('Token saved:', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"rememberMe\": false,\n  \"deviceInfo\": \"Postman / MacOS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate with email and password. On success (200) the `token` collection variable is set automatically.\n\nSet `rememberMe: true` for a 30-day token instead of the default 24-hour token."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"rememberMe\": false,\n  \"deviceInfo\": \"Postman / MacOS\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\"\n  },\n  \"message\": \"Login successful\",\n  \"httpStatusCode\": \"200 OK\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — Wrong Credentials",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"WrongPassword\",\n  \"rememberMe\": false,\n  \"deviceInfo\": \"Postman / MacOS\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"Bad credentials\",\n  \"httpStatusCode\": \"401 UNAUTHORIZED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login — Remember Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.data.token);",
+                  "    console.log('Remember-me token saved:', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"rememberMe\": true,\n  \"deviceInfo\": \"Postman / MacOS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login with `rememberMe: true` — issues a 30-day token instead of the default 24-hour token."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Invalidates the current session token immediately. The Bearer token becomes unusable on all subsequent requests without waiting for natural JWT expiry.\n\nRequires a valid `Authorization: Bearer {{token}}` header."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/logout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "auth", "logout"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"Logged out successfully\",\n  \"httpStatusCode\": \"200 OK\"\n}"
+            },
+            {
+              "name": "400 Bad Request — Missing Token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/logout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "auth", "logout"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"No active session found\",\n  \"httpStatusCode\": \"400 BAD_REQUEST\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "User resource endpoints — profile management.",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/user/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "user", "profile"]
+            },
+            "description": "Returns the authenticated user's profile as a `UserProxy` read-model. Password is never included in the response."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/user/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "user", "profile"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"roles\": [\"USER\"],\n    \"createdAt\": \"2026-05-16T10:00:00\",\n    \"updatedAt\": \"2026-05-16T10:00:00\"\n  },\n  \"message\": \"Profile retrieved successfully\",\n  \"httpStatusCode\": \"200 OK\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — Missing or Expired Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/user/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "user", "profile"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"Unauthorized\",\n  \"httpStatusCode\": \"401 UNAUTHORIZED\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "description": "Session management endpoints — view, revoke single, revoke all.",
+      "item": [
+        {
+          "name": "Get Active Sessions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length > 0) {",
+                  "        pm.collectionVariables.set('sessionId', json.data[0].id);",
+                  "        console.log('First sessionId saved:', json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sessions"]
+            },
+            "description": "Returns all active sessions for the authenticated user. The first session's `id` is saved automatically to the `sessionId` collection variable for use in Revoke Session."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "sessions"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"f9e8d7c6-b5a4-3210-fedc-ba9876543210\",\n      \"deviceInfo\": \"Postman / MacOS\",\n      \"rememberMe\": false,\n      \"active\": true,\n      \"createdAt\": \"2026-05-16T10:00:00\",\n      \"expiresAt\": \"2026-05-17T10:00:00\",\n      \"lastActiveAt\": \"2026-05-16T11:30:00\"\n    }\n  ],\n  \"message\": \"Active sessions retrieved\",\n  \"httpStatusCode\": \"200 OK\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Revoke Session",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sessions", "{{sessionId}}"]
+            },
+            "description": "Revokes a specific session by ID. The `{{sessionId}}` variable is populated automatically when you run **Get Active Sessions**.\n\nTo revoke a different session manually replace `{{sessionId}}` in the URL with the target session UUID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "sessions", "f9e8d7c6-b5a4-3210-fedc-ba9876543210"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"Session revoked successfully\",\n  \"httpStatusCode\": \"200 OK\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "sessions", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"Session not found\",\n  \"httpStatusCode\": \"404 NOT_FOUND\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Revoke All Sessions",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sessions", "all"]
+            },
+            "description": "Revokes all active sessions for the authenticated user across every device. After this call, all existing tokens are immediately invalidated."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/all",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "sessions", "all"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": null,\n  \"message\": \"All sessions revoked successfully\",\n  \"httpStatusCode\": \"200 OK\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
